@@ -9,11 +9,11 @@ def process(raw):
     """
     Line by line processing of syllabus file.  Each line that needs
     processing is preceded by 'head: ' for some string 'head'.  Lines
-    may be continued if they don't contain ':'.  
+    may be continued if they don't contain ':'.
     """
     field = None
     entry = { }
-    cooked = [ ] 
+    cooked = [ ]
     for line in raw:
         line = line.rstrip()
         if len(line) == 0:
@@ -22,26 +22,30 @@ def process(raw):
         if len(parts) == 1 and field:
             entry[field] = entry[field] + line
             continue
-        if len(parts) == 2: 
+        if len(parts) == 2:
             field = parts[0]
             content = parts[1]
         else:
-            raise ValueError("Trouble with line: '{}'\n".format(line) + 
+            raise ValueError("Trouble with line: '{}'\n".format(line) +
                 "Split into |{}|".format("|".join(parts)))
 
         if field == "begin":
             try:
-                base = arrow.get(content)
+                base = arrow.get(content, 'MM/DD/YYYY')
             except:
                 raise ValueError("Unable to parse date {}".format(content))
 
         elif field == "week":
+            date = base.replace(weeks=+(int(content) - 1))
+            now = arrow.now()
+            future = base.replace(weeks=+(int(content)))
             if entry:
                 cooked.append(entry)
                 entry = { }
             entry['topic'] = ""
             entry['project'] = ""
-            entry['week'] = content
+            entry['week'] = "{} - {}".format(content, date.format('MM/DD/YYYY'))
+            entry['current'] = True if now >= date and now <= future else False
 
         elif field == 'topic' or field == 'project':
             entry[field] = content
@@ -59,8 +63,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    
-    
-            
-    
