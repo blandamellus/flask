@@ -31,21 +31,21 @@ def process(raw):
 
         if field == "begin":
             try:
-                base = arrow.get(content, 'MM/DD/YYYY')
+                base = arrow.get(content, 'MM/DD/YYYY').replace(tzinfo='local')
             except:
                 raise ValueError("Unable to parse date {}".format(content))
 
         elif field == "week":
             date = base.replace(weeks=+(int(content) - 1))
             now = arrow.now()
-            future = base.replace(weeks=+(int(content)))
+            end = base.replace(weeks=+int(content))
             if entry:
                 cooked.append(entry)
                 entry = { }
             entry['topic'] = ""
             entry['project'] = ""
             entry['week'] = "{} - {}".format(content, date.format('MM/DD/YYYY'))
-            entry['current'] = True if now >= date and now <= future else False
+            entry['current'] = True if now >= date and now < end else False
 
         elif field == 'topic' or field == 'project':
             entry[field] = content
